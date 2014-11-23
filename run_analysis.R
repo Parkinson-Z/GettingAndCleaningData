@@ -43,5 +43,5 @@
   ##acc <- readLines("UCI HAR Dataset/test/Inertial Signals/body_acc_x_test.txt",n=2)
   tBodyAcc_mean_X <- tapply(tb[,1],list(tb$subjects,tb$activities),mean)
   tBodyAcc_mean_X <- as.table(tBodyAcc_mean_X)
-  xx <- format(tBodyAcc_mean_X,digits=15)
+  xx <- format(tBodyAcc_mean_X,digits=5)
   write.table(xx, file="tBodyAcc_mean_X.txt",row.name=F)
