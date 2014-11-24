@@ -7,7 +7,7 @@
 #    5.From the data set in step 4, creates a second, independent tidy data set with the 
 #      average of each variable for each activity and each subject.
 
-  activity_labels <- read.table("UCI HAR Dataset/activity_labels.txt")
+  activity_labels <- read.csv("UCI HAR Dataset/activity_labels.txt",sep=" ",header=F,colClasses="character")
   features <- read.csv("UCI HAR Dataset/features.txt",header=F,sep=" ",colClasses="character")
   cc <- sort(c(grep("mean",features[,2]),grep("std",features[,2])))
 
@@ -18,7 +18,7 @@
   X_train <- read.table("UCI HAR Dataset/train/X_train.txt")
   X_train <- X_train[,cc]
 
-  X_data <- rbind(X_train,X_test)
+  X_data <- rbind(X_test,X_train)
   colnames(X_data) <- features[cc,2]
 
 
