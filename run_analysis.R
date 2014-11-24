@@ -7,41 +7,37 @@
 #    5.From the data set in step 4, creates a second, independent tidy data set with the 
 #      average of each variable for each activity and each subject.
 
-  activity_labels <- read.csv("UCI HAR Dataset/activity_labels.txt",sep=" ",header=F,colClasses="character")
-  features <- read.csv("UCI HAR Dataset/features.txt",sep=" ",header=F,colClasses="character")
-  cc <- grep("mean",features$V2)
-  cc <- append(cc,grep("std",features$V2))
+  activity_labels <- read.table("UCI HAR Dataset/activity_labels.txt")
+  features <- read.csv("UCI HAR Dataset/features.txt",header=F,sep=" ",colClasses="character")
+  cc <- sort(c(grep("mean",features[,2]),grep("std",features[,2])))
+
  
-  X_test <- readLines("UCI HAR Dataset/test/X_test.txt")
-  tb <- NULL
-  start <- seq(1,560*16+1,16)
-  stop <- seq(16,561*16,16)
-  for (k in 1:length(X_test)) tb <- rbind(tb,as.numeric(substring(X_test[k],start,stop))[cc])
+  X_test <- read.table("UCI HAR Dataset/test/X_test.txt")
+  X_test <- X_test[,cc]	#only mean and std
 
-  X_test <- readLines("UCI HAR Dataset/train/X_train.txt")
-  for (k in 1:length(X_test)) tb <- rbind(tb,as.numeric(substring(X_test[k],start,stop))[cc])
+  X_train <- read.table("UCI HAR Dataset/train/X_train.txt")
+  X_train <- X_train[,cc]
 
-  tb <- as.data.frame(tb)
-  colnames(tb) <- features$V2[cc]
+  X_data <- rbind(X_train,X_test)
+  colnames(X_data) <- features[cc,2]
 
-  action1 <- read.csv("UCI HAR Dataset/test/y_test.txt",header=F,colClasses="character")
-  action2 <- read.csv("UCI HAR Dataset/train/y_train.txt",header=F,colClasses="character")
-  action1 <- action1$V1; action2 <- action2$V1;
-  actions <- c(action1,action2)
+
+  y_test <- read.table("UCI HAR Dataset/test/y_test.txt")
+  y_train <- read.table("UCI HAR Dataset/train/y_train.txt")
+  y_test <- y_test$V1; y_train <- y_train$V1;
+  actions <- c(y_test,y_train)
   actions <- as.numeric(actions)
   actions <- as.factor(actions)
-  activities <- factor(actions,labels=activity_labels$V2)
-  tb <- cbind(tb,activities)
+  activities <- factor(actions,labels=activity_labels[,2])
 
-  subject1 <- read.csv("UCI HAR Dataset/test/subject_test.txt",header=F,colClasses="character")
-  subject2 <- read.csv("UCI HAR Dataset/train/subject_train.txt",header=F,colClasses="character")
-  subject1 <- subject1$V1; subject2 <- subject2$V1;
-  subjects <- c(subject1,subject2)
+  subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt")
+  subject_train <- read.table("UCI HAR Dataset/train/subject_train.txt")
+  subject_test <- subject_test$V1; subject_train <- subject_train$V1;
+  subjects <- c(subject_test,subject_train)
   subjects <- as.numeric(subjects)
-  tb <- cbind(tb,subjects)
+  tb <- cbind(subjects,activities,X_data)
   
-  ##acc <- readLines("UCI HAR Dataset/test/Inertial Signals/body_acc_x_test.txt",n=2)
-  tBodyAcc_mean_X <- tapply(tb[,1],list(tb$subjects,tb$activities),mean)
-  tBodyAcc_mean_X <- as.table(tBodyAcc_mean_X)
-  xx <- format(tBodyAcc_mean_X,digits=5)
-  write.table(xx, file="tBodyAcc_mean_X.txt",row.name=F)
+  tidy <- split(tb[, -(1:2)], list(tb$subjects, tb$activities));
+  tidy <- sapply(tidy, apply, 2, mean);
+  tidy <- t(tidy);
+  write.table(tidy, file="tidy_data.txt",row.name=F)
